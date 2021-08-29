@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,6 +34,7 @@ class _TestScreenState extends State<TestScreen> {
   bool isBackButtonEnabled = false;
   bool isCorrectInCorrectImageEnabled = false;
   bool isEndMessageEnabled = false;
+  bool isCorrect = false;
 
   @override
   void initState() {
@@ -47,15 +50,29 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   void initSounds() async {
-    soundpool = Soundpool();
+    soundpool = Soundpool.fromOptions();
     soundIdCorrect = await loadSound("assets/sounds/sound_correct.mp3");
     soundIdInCorrect = await loadSound("assets/sounds/sound_incorrect.mp3");
+    setState(() {
+
+    });
+
+
+  } on IOException catch(error){
+    print("エラーの内容は：$error");
   }
 
-  FutureloadSound<int>(String soundPath) {
+  Future<int> loadSound(String soundPath) {
     return rootBundle.load(soundPath).then((value) => soundpool.load(value));
+  }
 
-}
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    soundpool.release();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -187,19 +204,55 @@ class _TestScreenState extends State<TestScreen> {
 
   Widget _calcButton(String numString) {
     return ElevatedButton(
-      style: ElevatedButton.styleFrom(primary: Colors.brown),
-      onPressed: null,
+      style: ElevatedButton.styleFrom(
+      primary: Colors.amber),
+      onPressed: () => inputAnswer(numString),
       child: Text(
         numString,
         style: TextStyle(fontSize: 24.0),
       ),
     );
+
+     // padding: const EdgeInsr,
+    //   padding: const EdgeInsets.all(8.0),
+    //   child: ElevatedButton(
+    //    //style: ElevatedButton.styleFrom  // (primary: Colors.brown),
+    //     color: Colors.blue,
+    //     onPressed: () => print(numString),
+    //     child: Text(
+    //       numString,
+    //       style: TextStyle(fontSize: 24.0),
+    //     ),
+    //   ),
+    // );
     //   primary: Colors.brown,
     // ),
     // onPressed: null,
     // child: Text(numString,style: TextStyle(fontSize: 24.0),),),
     // numString
     // style: TextStyle(fontSize: 24.0),
+  }
+  inputAnswer(String numString) {
+    // setState(() {
+    //   if(numString == "C"){
+    //     answerString = "";
+    //     return;
+    //   }
+    //   if(numString == "-"){
+    //     if (answerString == "") answerString = "-";
+    //     return;
+    //   }
+    //   if (numString == "0"){
+    //     if (answerString != "0"&& answerString != "-")
+    //       answerString = answerString + numString;
+    //     return;
+    //   }
+    //   if (answerString == "0"){
+    //    answerString = numString;
+    //     return;
+    // });
+    //
+    // answerString = answerString + numString;
   }
 //TODO 問題を出す
   void setQuestion() {
@@ -208,74 +261,118 @@ class _TestScreenState extends State<TestScreen> {
     isBackButtonEnabled = false;
     isCorrectInCorrectImageEnabled = false;
     isEndMessageEnabled = false;
+
+    Random random = Random();
+    questionLeft = random.nextInt(100) + 1;
+    questionRight = random.nextInt(100) + 1;
+
+    if (random.nextInt(2) + 1 == 1) {
+      operator = "+";
+    }else{
+      operator = "-";
+    }
   }
 
-  loadSound(String soundPath) {}
-
-
-}
 //TODO 〇・バツ画像
-Future<Widget> _correctIncorrectImage() async {
-  var isCorrectIncorrectImageEnabled;
-  if (isCorrectIncorrectImageEnabled == true){
-    return Center(child: Image.asset("assets/images/pic_correct.png"),);
-  } else {
-    return Container();
+  Widget _correctIncorrectImage() {
+    var isCorrectIncorrectImageEnabled;
+    if (isCorrectIncorrectImageEnabled == true) {
+      return Center(
+        child: Image.asset("assets/images/pic_correct.png"),
+      );
+    } else {
+      return Container();
+    }
   }
-}
-  
 
- //TODO テスト終了メッセージ 
-Widget _endMessage() {
-  if(isEndMessageEnabled){
-    return Container(child: Text("テスト終了",style: TextStyle(fontSize: 60.0),),);
-  } else{
-    return Container();
+  //TODO テスト終了メッセージ
+  Widget _endMessage() {
+    if (isEndMessageEnabled) {
+      return Container(
+        child: Text(
+          "テスト終了",
+          style: TextStyle(fontSize: 60.0),
+        ),
+      );
+    } else {
+      return Container();
+    }
   }
-}
 
 //答え合わせボタン
-Widget _answerCheckButton() {
-  var isCalcButtonsEnabled;
+  Widget _answerCheckButton() {
+    var isCalcButtonsEnabled;
 
-  return Padding(
-    padding: const EdgeInsets.only(left: 80.0, right: 8.0),
-    child: SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          primary: Colors.brown,
-        ),
-        onPressed: isCalcButtonsEnabled ? () => answerCheck() : null,
-        child: Text(
-          "答え合わせボタン",
-          style: TextStyle(fontSize: 14.0),
+    return Padding(
+      padding: const EdgeInsets.only(left: 80.0, right: 8.0),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            primary: Colors.brown,
+          ),
+          onPressed: isCalcButtonsEnabled ? () => answerCheck() : null,
+          child: Text(
+            "答え合わせボタン",
+            style: TextStyle(fontSize: 14.0),
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-answerCheck() {}
+  answerCheck() {
+    if (answerString == "" || answerString == ""  ){
+      return;
+    }
+    isCalcButtonsEnabled = false;
+    isAnswerCheckButtonEnabled = false;
+    isBackButtonEnabled = false;
+    isCorrectInCorrectImageEnabled = true;
+    isEndMessageEnabled = false;
+
+    var myAnswer = int.parse(answerString).toInt();
+    var realAnswer = 0;
+    if (operator == "+") {
+      realAnswer = questionLeft + questionRight;
+    }else{
+      realAnswer = questionLeft - questionRight;
+    }
+
+    if (myAnswer == realAnswer){
+     isCorrect = true;
+     soundpool.play(soundIdCorrect);
+     numberOfCorrect += 1;
+    } else {
+      isCorrect = true;
+      soundpool.play(soundIdInCorrect);
+    }
+    correctRate = (numberOfCorrect / (widget.numberOfQuestions - numberOfRemaining)*100).toInt();
+
+    setState(() {
+
+    });
+  }
 
 //TODO 戻るボタン
-Widget _backButton() {
-  return Container(
-    padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
-    child: SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: null,
-        child: Text(
-          "もどる",
-          style: TextStyle(fontSize: 14.0),
+  Widget _backButton() {
+    return Container(
+      padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: null,
+          child: Text(
+            "もどる",
+            style: TextStyle(fontSize: 14.0),
+          ),
         ),
       ),
-    ),
-  );
-}
-//159 Table 3:41
-//157,158
+    );
+  }
+
+
+//160
 
 // return SizedBox(
 //   width: double.infinity,
@@ -283,3 +380,5 @@ Widget _backButton() {
 //       onPressed: null,
 //       child: Text("答え合わせボタン",
 //         style: TextStyle(fontSize: 14.0),),
+
+}
