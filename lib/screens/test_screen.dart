@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
@@ -36,6 +38,8 @@ class _TestScreenState extends State<TestScreen> {
   bool isEndMessageEnabled = false;
   bool isCorrect = false;
 
+  var children;
+
   @override
   void initState() {
     super.initState();
@@ -50,21 +54,20 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   void initSounds() async {
-    soundpool = Soundpool.fromOptions();
-    soundIdCorrect = await loadSound("assets/sounds/sound_correct.mp3");
-    soundIdInCorrect = await loadSound("assets/sounds/sound_incorrect.mp3");
-    setState(() {
+    try {
+      soundpool = Soundpool.fromOptions();
+      soundIdCorrect = await loadSound("assets/sounds/sound_correct.mp3");
+      soundIdInCorrect = await loadSound("assets/sounds/sound_incorrect.mp3");
+      setState(() {
 
-    });
-
-
-  } on IOException catch(error){
-    print("エラーの内容は：$error");
+      });
+    } on IOException catch (error) {
+      print("エラーの内容は：$error");
+    }
   }
-
-  Future<int> loadSound(String soundPath) {
-    return rootBundle.load(soundPath).then((value) => soundpool.load(value));
-  }
+    Future<int> loadSound(String soundPath) {
+      return rootBundle.load(soundPath).then((value) => soundpool.load(value));
+    }
 
   @override
   void dispose() {
@@ -80,20 +83,22 @@ class _TestScreenState extends State<TestScreen> {
       child: Scaffold(
         body: Stack(
           children: [
-            Column(
-              children: <Widget>[
-                //スコア表示部分
-                _scorePart(),
-                //問題表示部分
-                _questionPart(),
-                //電卓ボタン部分
-                _calcButtons(),
-                //答え合わせボタン
-                _answerCheckButton(),
+          children [
+              Column(
+                children: <Widget>[
+                  //スコア表示部分
+                  _scorePart(),
+                  //問題表示部分
+                  _questionPart(),
+                  //電卓ボタン部分
+                  _calcButtons(),
+                  //答え合わせボタン
+                  _answerCheckButton(),
 
-                _backButton(),
-              ],
-            ),
+                  _backButton(),
+                ],
+              )
+            ],
             _correctIncorrectImage(),
             //テスト終了メッセージ
             _endMessage(),
@@ -176,29 +181,34 @@ class _TestScreenState extends State<TestScreen> {
 
   //電卓ボタン部分
   Widget _calcButtons() {
-    return Table(
-      children: [
-        TableRow(children: [
-          _calcButton("7"),
-          _calcButton("8"),
-          _calcButton("9"),
-        ]),
-        TableRow(children: [
-          _calcButton("4"),
-          _calcButton("5"),
-          _calcButton("6"),
-        ]),
-        TableRow(children: [
-          _calcButton("1"),
-          _calcButton("2"),
-          _calcButton("3"),
-        ]),
-        TableRow(children: [
-          _calcButton("0"),
-          _calcButton("-"),
-          _calcButton("C"),
-        ]),
-      ],
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 8.0,right: 8.0,top: 50.0),
+        child: Table(
+          children: [
+            TableRow(children: [
+              _calcButton("7"),
+              _calcButton("8"),
+              _calcButton("9"),
+            ]),
+            TableRow(children: [
+              _calcButton("4"),
+              _calcButton("5"),
+              _calcButton("6"),
+            ]),
+            TableRow(children: [
+              _calcButton("1"),
+              _calcButton("2"),
+              _calcButton("3"),
+            ]),
+            TableRow(children: [
+              _calcButton("0"),
+              _calcButton("-"),
+              _calcButton("C"),
+            ]),
+          ],
+        ),
+      ),
     );
   }
 
@@ -206,7 +216,7 @@ class _TestScreenState extends State<TestScreen> {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
       primary: Colors.amber),
-      onPressed: () => inputAnswer(numString),
+      onPressed: () => print(numString),
       child: Text(
         numString,
         style: TextStyle(fontSize: 24.0),
@@ -233,14 +243,46 @@ class _TestScreenState extends State<TestScreen> {
     // style: TextStyle(fontSize: 24.0),
   }
   inputAnswer(String numString) {
+         //早期リターンを使う場合
     // setState(() {
-    //   if(numString == "C"){
-    //     answerString = "";
+    //    if(numString == "C"){
+    //      answerString = "";
+    //      return;
+    //    }
+    //    if(numString == "-"){
+    //     if(answerString == "") answerString = "-";
     //     return;
-    //   }
+    //    }
+    //    if(numString == "0"){
+    //      if(answerString != "0"&& answerString != "-")
+    //        answerString = answerString + numString;
+    //      return;
+    //    }
+    //    if(answerString == "0"){
+    //      answerString = numString;
+    //      return;
+    //    }
+    //    answerString = answerString + numString;
+    //    });
+
+    //普通のIF文
+    setState(() {
+      if (numString == "C"){
+        answerString = "";
+      } else if (numString == "-"){
+        if(answerString == "") answerString ="";
+      } else if (numString == "0"){
+        answerString = answerString + numString;
+      } else if (answerString == "0"){
+        answerString = numString;
+      } else {
+        answerString = answerString + numString;
+      }
+    });
+
     //   if(numString == "-"){
     //     if (answerString == "") answerString = "-";
-    //     return;
+    //     return;                                                 記
     //   }
     //   if (numString == "0"){
     //     if (answerString != "0"&& answerString != "-")
@@ -253,6 +295,14 @@ class _TestScreenState extends State<TestScreen> {
     // });
     //
     // answerString = answerString + numString;
+    //
+    // setState(() {
+    //   if (numString == "C"){
+    //     answerString = "";
+    //   } else if (numString == "-"){
+    //     if(answerString = "") answerString = "-";
+    //   } else if (numString == "0"){
+    // });
   }
 //TODO 問題を出す
   void setQuestion() {
@@ -261,6 +311,8 @@ class _TestScreenState extends State<TestScreen> {
     isBackButtonEnabled = false;
     isCorrectInCorrectImageEnabled = false;
     isEndMessageEnabled = false;
+    isCorrect = false;
+    answerString = "";
 
     Random random = Random();
     questionLeft = random.nextInt(100) + 1;
@@ -271,6 +323,9 @@ class _TestScreenState extends State<TestScreen> {
     }else{
       operator = "-";
     }
+    setState(() {
+
+    });
   }
 
 //TODO 〇・バツ画像
@@ -287,11 +342,13 @@ class _TestScreenState extends State<TestScreen> {
 
   //TODO テスト終了メッセージ
   Widget _endMessage() {
-    if (isEndMessageEnabled) {
-      return Container(
-        child: Text(
-          "テスト終了",
-          style: TextStyle(fontSize: 60.0),
+    if (isEndMessageEnabled ) {
+      return Center(
+        child: Container(
+          child: Text(
+            "テスト終了",
+            style: TextStyle(fontSize: 60.0),
+          ),
         ),
       );
     } else {
@@ -347,21 +404,34 @@ class _TestScreenState extends State<TestScreen> {
       isCorrect = true;
       soundpool.play(soundIdInCorrect);
     }
-    correctRate = (numberOfCorrect / (widget.numberOfQuestions - numberOfRemaining)*100).toInt();
+   // correctRate = (numberOfCorrect / (widget.numberOfQuestions - numberOfRemaining)*100).toInt();
+
+    correctRate = (numberOfRemaining ~/ (widget.numberOfQuestions - numberOfRemaining)) * 100;
+
+    if(numberOfRemaining == 0){
+      //TODO
+     Timer(Duration(seconds: 1), () => setQuestion());
+    } else {
+      
+    }
 
     setState(() {
-
+    //answerString = answerString + numString ;
     });
   }
-
+    //動画 171 
 //TODO 戻るボタン
   Widget _backButton() {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: null,
+          style: ElevatedButton.styleFrom(
+            primary: Colors.white,
+          ),
+          onPressed: isBackButtonEnabled ? () => closeTestScreen() : null,
+          //color: Color;
           child: Text(
             "もどる",
             style: TextStyle(fontSize: 14.0),
@@ -370,9 +440,10 @@ class _TestScreenState extends State<TestScreen> {
       ),
     );
   }
-
+     //174
 
 //160
+//166 電卓ボタンを押す処理を実装しよう
 
 // return SizedBox(
 //   width: double.infinity,
@@ -380,5 +451,9 @@ class _TestScreenState extends State<TestScreen> {
 //       onPressed: null,
 //       child: Text("答え合わせボタン",
 //         style: TextStyle(fontSize: 14.0),),
+ closeTestScreen(){
+    Navigator.pop(context);
+    
+ }
 
 }

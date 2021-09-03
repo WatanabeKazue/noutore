@@ -10,6 +10,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<DropdownMenuItem<int>> _memuItems = [];
   int _numberOfQuestions = 0;
 
+  var selectedValue;
+
   @override
   void initState() {
     super.initState();
@@ -17,19 +19,30 @@ class _HomeScreenState extends State<HomeScreen> {
 
     _numberOfQuestions = _memuItems[0].value!;
   }
-  void setMenuItems() {
-   _memuItems.add(DropdownMenuItem(value: 10, child: Text ("10"),));
-   _memuItems.add(DropdownMenuItem(value: 20, child: Text ("20"),));
-   _memuItems.add(DropdownMenuItem(value: 30, child: Text ("30"),));
 
-   // _memuItems
-   // ..add(DropdownMenuItem(value: 10, child: Text (10.toString()),))
-   // ..add(DropdownMenuItem(value: 10, child: Text (10.toString()),))
-   // ..add(DropdownMenuItem(value: 10, child: Text (10.toString()),));
+  void setMenuItems() {
+    _memuItems.add(DropdownMenuItem(
+      value: 10,
+      child: Text("10"),
+    ));
+    _memuItems.add(DropdownMenuItem(
+      value: 20,
+      child: Text("20"),
+    ));
+    _memuItems.add(DropdownMenuItem(
+      value: 30,
+      child: Text("30"),
+    ));
+
+    // _memuItems
+    // ..add(DropdownMenuItem(value: 10, child: Text (10.toString()),))
+    // ..add(DropdownMenuItem(value: 10, child: Text (10.toString()),))
+    // ..add(DropdownMenuItem(value: 10, child: Text (10.toString()),));
 //    _memuItems = [DropdownMenuItem(value: 10, child: Text (10.toString()),),
 //     DropdownMenuItem(value: 10, child: Text (10.toString()),),
 //     DropdownMenuItem(value: 10, child: Text (10.toString()),),];
   }
+
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
@@ -54,12 +67,12 @@ class _HomeScreenState extends State<HomeScreen> {
               DropdownButton(
                 items: _memuItems,
                 value: _numberOfQuestions,
-                onChanged: (int? selectedValue){
+                onChanged: (int? value) {
                   setState(() {
                     _numberOfQuestions = selectedValue!;
                   });
                 },
-                  // childの後にchildをつけてはいけない
+                // childの後にchildをつけてはいけない
               ),
               Expanded(
                 // CenterじゃなくてContainer
@@ -90,15 +103,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  startTestScreen(BuildContext context) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => TestScreen(numberOfQuestions: _numberOfQuestions,)));
+  changeDropdownItem(int? = value) {
+    setState(() {
+      _numberOfQuestions = (value != null) ? value! :10;
+    });
   }
 
-
-
-
+  startTestScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TestScreen(
+          numberOfQuestions: _numberOfQuestions,
+        ),
+      ),
+    );
+  }
 }
-
-
 
 //TODO 155 4:34
